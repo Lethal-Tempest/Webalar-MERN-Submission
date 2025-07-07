@@ -15,16 +15,38 @@ const Home = ({ visible }) => {
 
     async function handleDragEvent(event) {
         const { active, over } = event;
-
         if (!over || active.id === over.id) return;
 
+        const draggedTask = tasks.find((task) => task._id === active.id);
+        const destinationTasks = tasks.filter((t) => t.status === over.id);
+
+        // Check if same name exists in destination column
+        const conflict = destinationTasks.some((t) => (t.status===over.id && t.name.trim().toLowerCase() === draggedTask.name.trim().toLowerCase()));
+        if (conflict) {
+            alert("A task with the same name already exists in the target column.");
+            return; // ❌ Do not proceed with update
+        }
+
+        // ✅ Update UI immediately
         setTasks((prevTasks) =>
             prevTasks.map((task) =>
                 task._id === active.id ? { ...task, status: over.id } : task
             )
         );
-        const response = await axios.post(backendUrl + '/api/task/update', { id: active.id, status: over.id }, { headers: { token } });
+
+        // ✅ Send update to DB
+        try {
+            await axios.post(backendUrl + '/api/task/update', {
+                id: active.id,
+                status: over.id,
+            }, {
+                headers: { token }
+            });
+        } catch (error) {
+            console.error("Error updating task:", error);
+        }
     }
+
 
 
     return (

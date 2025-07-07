@@ -3,25 +3,34 @@ import Task from "../models/taskModel.js";
 export const add = async (req, res) => {
   try {
     const { name, desc, assUser, status, priority } = req.body;
+    const reservedColumnIds = ['to do', 'in progress', 'done'];
+
     if (!name || !desc || !assUser || !status || !priority) {
       return res.status(400).json({ success: false, message: "All required fields must be provided" });
     }
-    const newTask = new Task({
-      name,
-      desc,
-      assUser,
-      status,
-      priority,
-    });
+
+    if (reservedColumnIds.includes(name.trim().toLowerCase())) {
+      return res.status(400).json({ success: false, message: "Task name cannot match a column name" });
+    }
+
+    const existingTask = await Task.findOne({ name: name.trim(), status });
+    if (existingTask) {
+      return res.status(400).json({ success: false, message: "Task with the same name already exists in this column" });
+    }
+
+    const newTask = new Task({ name, desc, assUser, status, priority });
     await newTask.save();
+
     const io = req.app.get('io');
     io.emit('taskAdded', newTask);
+
     res.status(201).json({ success: true, message: "Task added successfully", task: newTask });
   } catch (error) {
     console.error("Error adding task:", error);
     res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
+
 
 export const list = async (req, res) => {
   try {
@@ -35,14 +44,33 @@ export const list = async (req, res) => {
 
 export const update = async (req, res) => {
   try {
-    const { _id, name, desc, assUser, status, priority } = req.body;
+    const { _id, name, desc, assUser, status, priority, id } = req.body;
+    const userId = _id ?? id;
+    const task = await Task.findById(userId);
 
-    const task = await Task.findById(_id);
     if (!task) {
       return res.status(404).json({ success: false, message: "Task not found" });
     }
 
-    // ✅ Only update fields if they are provided
+    const reservedColumnIds = ['to do', 'in progress', 'done'];
+
+    const newName = name ?? task.name;
+    const newStatus = status ?? task.status;
+
+    if (reservedColumnIds.includes(newName.trim().toLowerCase())) {
+      return res.status(400).json({ success: false, message: "Task name cannot match a column name" });
+    }
+
+    const duplicate = await Task.findOne({
+      _id: { $ne: task._id },
+      name: newName.trim(),
+      status: newStatus,
+    });
+
+    if (duplicate) {
+      return res.status(400).json({ success: false, message: "Task with the same name already exists in this column" });
+    }
+
     if (name !== undefined) task.name = name;
     if (desc !== undefined) task.desc = desc;
     if (assUser !== undefined) task.assUser = assUser;
@@ -60,6 +88,7 @@ export const update = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error", error: error.message });
   }
 };
+
 
 export const remove = async (req, res) => {
   try {
