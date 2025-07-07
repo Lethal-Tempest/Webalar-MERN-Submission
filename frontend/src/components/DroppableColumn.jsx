@@ -2,7 +2,7 @@ import React from 'react'
 import DraggableTask from './DraggableTask'
 import { useDroppable } from '@dnd-kit/core'
 
-const DroppableColumn = ({ column, tasks }) => {
+const DroppableColumn = ({ column, tasks, setSetup, setSelectedTask }) => {
     const {setNodeRef} = useDroppable({
         id: column.id
     })
@@ -20,7 +20,7 @@ const DroppableColumn = ({ column, tasks }) => {
                         <p className="italic">No tasks yet</p>
                     </div>
                     : tasks.map((task) => (
-                        <DraggableTask key={task._id} task={task} />
+                        <DraggableTask key={task._id} task={task} setSetup={setSetup} setSelectedTask={setSelectedTask} />
                     ))
             }
 

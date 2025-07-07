@@ -3,7 +3,7 @@ import React, { createContext, useContext } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import axios from 'axios';
-import {io} from 'socket.io-client';
+import { io } from 'socket.io-client';
 
 const ShopContext = createContext();
 
@@ -34,7 +34,7 @@ export const ShopProvider = ({ children }) => {
     const fetchUsers = async () => {
       try {
         const response = await axios.post(backendUrl + '/api/user/users');
-        if(response.data.success){
+        if (response.data.success) {
           const data = response.data.users;
           setUsers(data);
         }
@@ -42,26 +42,47 @@ export const ShopProvider = ({ children }) => {
         console.error('Error fetching users:', error);
       }
     };
+
     const fetchTasks = async () => {
       try {
         const response = await axios.post(backendUrl + '/api/task/list');
-        if(response.data.success){
+        if (response.data.success) {
           const data = response.data.tasks;
-          console.log(data);
           setTasks(data);
         }
       } catch (error) {
         console.error('Error fetching tasks:', error);
       }
-    }
+    };
+
     fetchUsers();
     fetchTasks();
 
+    // 🔴 Real-time update when task is added
     socket.on('taskAdded', (task) => {
       setTasks((prevTasks) => [...prevTasks, task]);
-    })
-    return () => socket.off('taskAdded');
+    });
+
+    // 🟢 Real-time update when task is updated
+    socket.on('taskUpdated', (updatedTask) => {
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task._id === updatedTask._id ? updatedTask : task
+        )
+      );
+    });
+
+    socket.on('taskDeleted', (id) => {
+      setTasks((prevTasks) => prevTasks.filter((task) => task._id !== id));
+    });
+
+    return () => {
+      socket.off('taskAdded');
+      socket.off('taskUpdated');
+      socket.off('taskDeleted');
+    };
   }, []);
+
 
   return (
     <ShopContext.Provider value={{ socket, backendUrl, Columns, users, tasks, setTasks }}>
