@@ -64,7 +64,7 @@ export const ShopProvider = ({ children }) => {
   }, []);
 
   return (
-    <ShopContext.Provider value={{ socket, backendUrl, Columns, users, tasks }}>
+    <ShopContext.Provider value={{ socket, backendUrl, Columns, users, tasks, setTasks }}>
       {children}
     </ShopContext.Provider>
   );

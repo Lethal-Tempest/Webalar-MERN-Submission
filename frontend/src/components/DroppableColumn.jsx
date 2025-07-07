@@ -1,9 +1,13 @@
 import React from 'react'
 import DraggableTask from './DraggableTask'
+import { useDroppable } from '@dnd-kit/core'
 
 const DroppableColumn = ({ column, tasks }) => {
+    const {setNodeRef} = useDroppable({
+        id: column.id
+    })
     return (
-        < div
+        < div ref={setNodeRef}
             key={column.title}
             className="flex-1 bg-neutral-800 rounded-2xl shadow-lg p-5 flex flex-col items-center border border-neutral-700"
         >
