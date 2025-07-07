@@ -1,4 +1,5 @@
 import React from 'react'
+import DraggableTask from './DraggableTask'
 
 const DroppableColumn = ({ column, tasks }) => {
     return (
@@ -15,12 +16,7 @@ const DroppableColumn = ({ column, tasks }) => {
                         <p className="italic">No tasks yet</p>
                     </div>
                     : tasks.map((task) => (
-                        <div
-                            key={task._id}
-                            className="w-full bg-neutral-700 rounded-xl p-3 text-white text-xl"
-                        >
-                            {task.name}
-                        </div>
+                        <DraggableTask key={task._id} task={task} />
                     ))
             }
 

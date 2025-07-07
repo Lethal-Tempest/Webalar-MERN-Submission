@@ -3,10 +3,13 @@ import React, { createContext, useContext } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import axios from 'axios';
+import {io} from 'socket.io-client';
 
 const ShopContext = createContext();
 
 export const useShopContext = () => useContext(ShopContext);
+
+const socket = io('http://localhost:5000');
 
 export const Columns = [
   {
@@ -53,10 +56,15 @@ export const ShopProvider = ({ children }) => {
     }
     fetchUsers();
     fetchTasks();
+
+    socket.on('taskAdded', (task) => {
+      setTasks((prevTasks) => [...prevTasks, task]);
+    })
+    return () => socket.off('taskAdded');
   }, []);
 
   return (
-    <ShopContext.Provider value={{ backendUrl, Columns, users, tasks }}>
+    <ShopContext.Provider value={{ socket, backendUrl, Columns, users, tasks }}>
       {children}
     </ShopContext.Provider>
   );

@@ -14,6 +14,8 @@ export const add = async (req, res) => {
       priority,
     });
     await newTask.save();
+    const io = req.app.get('io');
+    io.emit('taskAdded', newTask);
     res.status(201).json({ success: true, message: "Task added successfully", task: newTask });
   } catch (error) {
     console.error("Error adding task:", error);
