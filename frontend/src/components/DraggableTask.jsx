@@ -15,7 +15,7 @@ const DraggableTask = ({ task, setSetup, setSelectedTask }) => {
     const {backendUrl} = useShopContext();
     const handleDelete = async () => {
     try {
-      await axios.post(backendUrl + '/api/task/remove', { id: task._id });
+      await axios.post(backendUrl + '/api/task/remove', { id: task._id }, {headers: {token: localStorage.getItem('token')}});
     } catch (err) {
       console.error("Error deleting task:", err);
     }

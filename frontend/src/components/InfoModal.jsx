@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { IoClose } from 'react-icons/io5';
 import { useShopContext } from '../context/ShopContext';
+import { InvalidTokenError } from 'jwt-decode';
 
 const InfoModal = ({ setup, task, onClose }) => {
   const { backendUrl } = useShopContext();
@@ -10,7 +11,7 @@ const InfoModal = ({ setup, task, onClose }) => {
 
   const handleUpdate = async () => {
     try {
-      const res = await axios.post(`${backendUrl}/api/task/update`, formData);
+      const res = await axios.post(`${backendUrl}/api/task/update`, formData, {headers: {token: localStorage.getItem('token')}});
       console.log(res.data.message);
       onClose(); // Close modal after update
     } catch (err) {

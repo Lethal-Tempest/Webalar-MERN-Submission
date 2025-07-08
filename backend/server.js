@@ -6,6 +6,7 @@ import userRoutes from './routes/userRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
 import {Server} from 'socket.io';
 import http from 'http';
+import logRoutes from './routes/logRoutes.js';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use(express.json());
 // Routes
 app.use('/api/user', userRoutes);
 app.use('/api/task', taskRoutes);
+app.use('/api/log', logRoutes);
 
 app.set('io', io);
 

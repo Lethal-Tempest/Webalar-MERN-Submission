@@ -1,42 +1,45 @@
-// ✅ ShopContext.jsx
-import React, { createContext, useContext } from 'react';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
+import {jwtDecode} from 'jwt-decode'; // 👈 add this line
 
 const ShopContext = createContext();
-
 export const useShopContext = () => useContext(ShopContext);
 
 const socket = io('http://localhost:5000');
 
 export const Columns = [
-  {
-    id: "todo",
-    title: "To Do"
-  },
-  {
-    id: "ip",
-    title: "In Progress"
-  },
-  {
-    id: "done",
-    title: "Done"
-  }
-]
+  { id: "todo", title: "To Do" },
+  { id: "ip", title: "In Progress" },
+  { id: "done", title: "Done" },
+];
 
 export const ShopProvider = ({ children }) => {
   const backendUrl = 'http://localhost:5000';
   const [users, setUsers] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [logs, setLogs] = useState([]);
+  const [currUser, setCurrUser] = useState(null); // 👈 current user
+
+  const token = localStorage.getItem('token');
+
+  const fetchLogs = async () => {
+    try {
+      const response = await axios.get(backendUrl + '/api/log/logs');
+      if (response.data.success) {
+        setLogs(response.data.logs);
+      }
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+    }
+  };
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await axios.post(backendUrl + '/api/user/users');
         if (response.data.success) {
-          const data = response.data.users;
-          setUsers(data);
+          setUsers(response.data.users);
         }
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -47,8 +50,7 @@ export const ShopProvider = ({ children }) => {
       try {
         const response = await axios.post(backendUrl + '/api/task/list');
         if (response.data.success) {
-          const data = response.data.tasks;
-          setTasks(data);
+          setTasks(response.data.tasks);
         }
       } catch (error) {
         console.error('Error fetching tasks:', error);
@@ -57,23 +59,24 @@ export const ShopProvider = ({ children }) => {
 
     fetchUsers();
     fetchTasks();
+    fetchLogs();
 
-    // 🔴 Real-time update when task is added
+    // Socket listeners
     socket.on('taskAdded', (task) => {
-      setTasks((prevTasks) => [...prevTasks, task]);
+      setTasks((prev) => [...prev, task]);
+      fetchLogs();
     });
 
-    // 🟢 Real-time update when task is updated
     socket.on('taskUpdated', (updatedTask) => {
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task._id === updatedTask._id ? updatedTask : task
-        )
+      setTasks((prev) =>
+        prev.map((task) => (task._id === updatedTask._id ? updatedTask : task))
       );
+      fetchLogs();
     });
 
     socket.on('taskDeleted', (id) => {
-      setTasks((prevTasks) => prevTasks.filter((task) => task._id !== id));
+      setTasks((prev) => prev.filter((task) => task._id !== id));
+      fetchLogs();
     });
 
     return () => {
@@ -83,9 +86,21 @@ export const ShopProvider = ({ children }) => {
     };
   }, []);
 
-
   return (
-    <ShopContext.Provider value={{ socket, backendUrl, Columns, users, tasks, setTasks }}>
+    <ShopContext.Provider
+      value={{
+        socket,
+        backendUrl,
+        Columns,
+        users,
+        tasks,
+        setTasks,
+        logs,
+        fetchLogs,
+        currUser,  // ✅ expose current user
+        token
+      }}
+    >
       {children}
     </ShopContext.Provider>
   );

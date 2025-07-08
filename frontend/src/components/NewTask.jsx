@@ -15,7 +15,7 @@ const NewTask = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-          const response = await axios.post(`${backendUrl}/api/task/add`, formData);
+          const response = await axios.post(`${backendUrl}/api/task/add`, formData, {headers: {token: localStorage.getItem('token')}});
     
           if (response.data.success) {
             setFormData({
