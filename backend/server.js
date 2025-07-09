@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5000;
 
 // ✅ Define allowed frontend URLs
 const allowedOrigins = [
-  'http://localhost:5000', // local frontend
+  'http://localhost:5173', // local frontend
   'https://webalar-mern-submission.vercel.app' // deployed frontend
 ];
 
