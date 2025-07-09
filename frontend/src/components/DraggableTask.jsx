@@ -12,14 +12,21 @@ const DraggableTask = ({ task, setSetup, setSelectedTask }) => {
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
         id: task._id,
     });
-    const {backendUrl} = useShopContext();
+    const { backendUrl } = useShopContext();
     const handleDelete = async () => {
-    try {
-      await axios.post(backendUrl + '/api/task/remove', { id: task._id }, {headers: {token: localStorage.getItem('token')}});
-    } catch (err) {
-      console.error("Error deleting task:", err);
-    }
-  };
+        try {
+            await axios.post(backendUrl + '/api/task/remove', { id: task._id }, { headers: { token: localStorage.getItem('token') } });
+        } catch (err) {
+            console.error("Error deleting task:", err);
+        }
+    };
+    // const setLastUpdated = async () => {
+    //     try {
+    //         await axios.post(backendUrl + '/api/task/updateLastUpdated', { id: task._id });
+    //     } catch (err) {
+    //         console.error("Error updating last updated:", err);
+    //     }
+    // }
 
     const style = transform
         ? { transform: `translate(${transform.x}px, ${transform.y}px)` }
@@ -32,10 +39,10 @@ const DraggableTask = ({ task, setSetup, setSelectedTask }) => {
             onMouseEnter={() => setHovering(true)}
             onMouseLeave={() => setHovering(false)}
             className={`mb-3 w-full rounded-xl p-3 px-4 flex justify-between items-center text-white text-xl ${task.priority === 'low'
-                    ? 'bg-green-900'
-                    : task.priority === 'medium'
-                        ? 'bg-yellow-900'
-                        : 'bg-red-900'
+                ? 'bg-green-900'
+                : task.priority === 'medium'
+                    ? 'bg-yellow-900'
+                    : 'bg-red-900'
                 }`}
         >
             {/* Left part: draggable area */}

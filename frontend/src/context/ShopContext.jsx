@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
-import {jwtDecode} from 'jwt-decode'; // 👈 add this line
+import { jwtDecode } from 'jwt-decode'; // 👈 add this line
 
 const ShopContext = createContext();
 export const useShopContext = () => useContext(ShopContext);
@@ -79,10 +79,16 @@ export const ShopProvider = ({ children }) => {
       fetchLogs();
     });
 
+    socket.on('userRegistered', () => {
+      console.log("🟢 New user registered");
+      fetchUsers(); // Re-fetch updated users list
+    });
+
     return () => {
       socket.off('taskAdded');
       socket.off('taskUpdated');
       socket.off('taskDeleted');
+      socket.off('userRegistered');
     };
   }, []);
 

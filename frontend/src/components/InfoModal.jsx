@@ -1,21 +1,36 @@
+// 📦 Complete InfoModal.jsx with Full Conflict Resolution
+
 import React, { useState } from 'react';
 import axios from 'axios';
 import { IoClose } from 'react-icons/io5';
 import { useShopContext } from '../context/ShopContext';
-import { InvalidTokenError } from 'jwt-decode';
+import ConflictModal from './ConflictModal';
 
 const InfoModal = ({ setup, task, onClose }) => {
   const { backendUrl } = useShopContext();
   const [formData, setFormData] = useState({ ...task });
   const isEdit = setup === 'edit';
+  const [lastSeen, setLastSeen] = useState(new Date(Date.now()));
+  const [conflictData, setConflictData] = useState(null);
 
   const handleUpdate = async () => {
     try {
-      const res = await axios.post(`${backendUrl}/api/task/update`, formData, {headers: {token: localStorage.getItem('token')}});
-      console.log(res.data.message);
-      onClose(); // Close modal after update
+      const res = await axios.post(`${backendUrl}/api/task/update`, {
+        ...formData,
+        lastUpdated: lastSeen
+      }, { headers: { token: localStorage.getItem('token') } });
+
+      if (res.status === 200) {
+        setLastSeen(res.data.task.lastUpdated); // Update timestamp after success
+        onClose();
+      }
     } catch (err) {
-      console.error("Update failed:", err);
+      if (err.response?.status === 409) {
+        const { currentTask, yourChanges } = err.response.data;
+        setConflictData({ currentTask, yourChanges });
+      } else {
+        console.error("Update failed:", err);
+      }
     }
   };
 
@@ -23,13 +38,12 @@ const InfoModal = ({ setup, task, onClose }) => {
     task.priority === 'low'
       ? 'bg-green-900'
       : task.priority === 'medium'
-      ? 'bg-yellow-900'
-      : 'bg-red-900';
+        ? 'bg-yellow-900'
+        : 'bg-red-900';
 
   return (
-    <div className="fixed top-0 left-0 w-screen h-screen bg-black/80 bg-opacity-50 z-100 flex justify-center items-center">
+    <div className="fixed top-0 left-0 w-screen h-screen bg-black/80 z-100 flex justify-center items-center">
       <div className={`w-[90%] max-w-[500px] p-6 rounded-2xl shadow-lg text-white ${bgColor} relative`}>
-        {/* Close */}
         <IoClose size={24} className="absolute top-4 right-4 cursor-pointer" onClick={onClose} />
 
         <h1 className="text-2xl text-center font-bold mb-4">{isEdit ? 'Edit Task' : 'Task Info'}</h1>
@@ -88,6 +102,22 @@ const InfoModal = ({ setup, task, onClose }) => {
           </button>
         )}
       </div>
+
+      {conflictData && (
+        <ConflictModal
+          conflictData={conflictData}
+          onResolve={() => {
+            setConflictData(null);
+            onClose();
+          }}
+          onDismiss={() => {
+            setFormData(conflictData.currentTask);
+            setLastSeen(conflictData.currentTask.lastUpdated); // Important!
+            setConflictData(null);
+          }}
+          backendUrl={backendUrl}
+        />
+      )}
     </div>
   );
 };

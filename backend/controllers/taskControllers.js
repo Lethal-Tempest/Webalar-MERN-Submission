@@ -77,7 +77,8 @@ export const list = async (req, res) => {
 
 export const update = async (req, res) => {
     try {
-        const { _id, name, desc, assUser, status, priority, id } = req.body;
+        const { _id, name, desc, assUser, status, priority, id, lastUpdated, force } = req.body;
+        console.log(req.body);
         const taskId = _id || id;
         const colName = {
             todo: 'To Do',
@@ -100,6 +101,33 @@ export const update = async (req, res) => {
         const io = req.app.get('io');
         const originalAssUser = task.assUser;
         const originalStatus = task.status;
+
+        console.log("🔍 Conflict Check:");
+        console.log("➡️  Client's lastSeen:", lastUpdated);
+
+        if (!force && lastUpdated) {
+            try {
+                const clientTime = new Date(lastUpdated).getTime();
+                const serverTime = new Date(task.lastUpdated).getTime();
+
+                console.log("🕒 Client:", new Date(lastUpdated).toISOString(), clientTime);
+                console.log("🕒 Server:", task.lastUpdated.toISOString(), serverTime);
+                console.log("➡️  Conflict?", clientTime < serverTime);
+
+                if (clientTime <= serverTime) {
+                    return res.status(409).json({
+                        success: false,
+                        conflict: true,
+                        message: "Conflict detected: someone else already updated this task.",
+                        currentTask: task,
+                        yourChanges: req.body,
+                    });
+                }
+            } catch (err) {
+                console.error("⚠️ Error parsing lastUpdated:", err.message);
+            }
+        }
+
 
         let changedFields = [];
 
@@ -125,6 +153,7 @@ export const update = async (req, res) => {
         }
 
         console.log("Changed fields:", changedFields);
+        task.lastUpdated = new Date();
 
         await task.save();
         io.emit('taskUpdated', task);
@@ -188,6 +217,22 @@ export const remove = async (req, res) => {
         res.status(200).json({ success: true, message: "Task deleted successfully", id: deletedTask._id });
     } catch (error) {
         console.error("Error deleting task:", error);
+        res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
+};
+
+export const updateLastUpdated = async (req, res) => {
+    try {
+        const { id } = req.body;
+        const task = await Task.findById(id);
+        if (!task) {
+            return res.status(404).json({ success: false, message: "Task not found" });
+        }
+        task.lastUpdated = new Date();
+        await task.save();
+        res.status(200).json({ success: true, message: "Last updated updated successfully" });
+    } catch (error) {
+        console.error("Error updating last updated:", error);
         res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
 };

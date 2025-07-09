@@ -29,7 +29,7 @@ const Login = ({setToken}) => {
   };
 
   return (
-    <div className='flex justify-center items-center h-screen relative bottom-10'>
+    <div className='flex justify-center items-center h-screen relative bottom-30'>
       <div className='flex flex-col gap-15 items-center'>
         <span className='text-4xl font-bold text-neutral-300'>
           {state === 'login' ? 'LOG IN' : 'SIGN UP'}
@@ -69,7 +69,7 @@ const Login = ({setToken}) => {
           </div>
           <button
             onClick={handleSubmit}
-            className='p-2 px-3 rounded-lg bg-neutral-900 text-neutral-300 text-2xl hover:bg-neutral-800 hover:cursor-pointer hover:scale-105 active:scale-110 transition-all ease-in-out duration-300'
+            className='p-2 px-3 rounded-lg bg-neutral-900 text-neutral-300 text-2xl hover:bg-neutral-300 hover:text-neutral-900 hover:cursor-pointer hover:scale-105 active:scale-110 transition-all ease-in-out duration-300'
           >
             {state === 'login' ? 'LOG IN' : 'SIGN UP'}
           </button>
