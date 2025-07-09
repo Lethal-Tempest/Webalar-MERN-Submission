@@ -1,26 +1,31 @@
+// server.js
+
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import http from 'http';
+import { Server } from 'socket.io';
+
 import userRoutes from './routes/userRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
-import { Server } from 'socket.io';
-import http from 'http';
 import logRoutes from './routes/logRoutes.js';
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT;
-const server = http.createServer(app);
+const PORT = process.env.PORT || 5000;
 
-// ✅ Define allowed origins first
+// ✅ Define allowed frontend URLs
 const allowedOrigins = [
-  'http://localhost:5174',
-  'https://webalar-mern-submission.vercel.app'
+  'http://localhost:5174', // local frontend
+  'https://webalar-mern-submission.vercel.app' // deployed frontend
 ];
 
-// ✅ Initialize Socket.IO after defining allowedOrigins
+// ✅ HTTP server for socket.io
+const server = http.createServer(app);
+
+// ✅ Socket.IO server with CORS
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
@@ -28,7 +33,7 @@ const io = new Server(server, {
   }
 });
 
-// ✅ CORS middleware for Express
+// ✅ Middleware
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
@@ -40,31 +45,34 @@ app.use(cors({
   },
   credentials: true
 }));
-
 app.use(express.json());
 
-// Routes
+// ✅ Routes
 app.use('/api/user', userRoutes);
 app.use('/api/task', taskRoutes);
 app.use('/api/log', logRoutes);
 
+// ✅ Attach io to app for use in controllers
 app.set('io', io);
 
+// ✅ Socket.IO events
 io.on('connection', (socket) => {
   console.log('🟢 User connected:', socket.id);
+
   socket.on('disconnect', () => {
     console.log('🔴 User disconnected:', socket.id);
   });
 });
 
-// MongoDB connection
+// ✅ MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
+  useUnifiedTopology: true
 })
 .then(() => console.log('✅ MongoDB Connected'))
-.catch((err) => console.error('❌ MongoDB Error:', err));
+.catch((err) => console.error('❌ MongoDB Error:', err.message));
 
+// ✅ Start server
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
