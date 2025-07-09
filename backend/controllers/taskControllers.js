@@ -257,14 +257,20 @@ export const smartAssign = async (req, res) => {
       { $group: { _id: "$assUser", count: { $sum: 1 } } }
     ]);
 
+    console.log(userTaskCounts);
+
     const allUsers = await User.find({});
     const countsMap = {};
     userTaskCounts.forEach(u => { countsMap[u._id.toString()] = u.count });
 
+    console.log(countsMap);
+
     // Pick user with min count
     const sortedUsers = allUsers
-      .map(u => ({ user: u, count: countsMap[u._id.toString()] || 0 }))
+      .map(u => ({ user: u, count: countsMap[u.name.toString()] || 0 }))
       .sort((a, b) => a.count - b.count);
+
+    console.log(sortedUsers);
 
     const bestUser = sortedUsers[0]?.user;
 

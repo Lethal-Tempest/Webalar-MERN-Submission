@@ -21,7 +21,7 @@ const Home = ({ visible }) => {
         const destinationTasks = tasks.filter((t) => t.status === over.id);
 
         // Check if same name exists in destination column
-        const conflict = destinationTasks.some((t) => (t.status===over.id && t.name.trim().toLowerCase() === draggedTask.name.trim().toLowerCase()));
+        const conflict = destinationTasks.some((t) => (t.status === over.id && t.name.trim().toLowerCase() === draggedTask.name.trim().toLowerCase()));
         if (conflict) {
             alert("A task with the same name already exists in the target column.");
             return; // ❌ Do not proceed with update
@@ -64,9 +64,14 @@ const Home = ({ visible }) => {
 
             <DndContext onDragEnd={handleDragEvent}>
                 {/* Left 2/3 - Board */}
-                <div className="w-full flex max-h-[80vh] gap-6">
+                <div className="w-full flex flex-col md:flex-row max-h-[80vh] gap-12 md:gap-6">
                     {Columns.map((column) => (
-                        <DroppableColumn key={column.id} column={column} tasks={tasks.filter((task) => task.status === column.id)} setSetup={setSetup} setSelectedTask={setSelectedTask} />
+                        <div key={column.id} className='flex flex-col items-center w-full h-full'>
+                            <h1 className="text-2xl font-semibold text-white mb-4 tracking-wide">
+                                {column.title}
+                            </h1>
+                            <DroppableColumn column={column} tasks={tasks.filter((task) => task.status === column.id)} setSetup={setSetup} setSelectedTask={setSelectedTask} />
+                        </div>
                     ))}
                 </div>
             </DndContext>

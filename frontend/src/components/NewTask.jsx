@@ -21,7 +21,7 @@ const NewTask = () => {
             setFormData({
                 name: '',
                 desc: '',
-                assUser: 'Assign user',
+                assUser: 'Unassigned',
                 status: 'todo',
                 priority: 'low'
             })

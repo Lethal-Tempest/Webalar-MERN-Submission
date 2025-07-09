@@ -42,8 +42,9 @@ const InfoModal = ({ setup, task, onClose }) => {
         : 'bg-red-900';
 
   return (
-    <div className="fixed top-0 left-0 w-screen h-screen bg-black/80 z-100 flex justify-center items-center">
-      <div className={`w-[90%] max-w-[500px] p-6 rounded-2xl shadow-lg text-white ${bgColor} relative`}>
+    <div className="fixed top-0 left-0 w-screen h-screen bg-black/80 z-100 flex justify-center items-center px-2 overflow-y-auto">
+      <div className={`w-full max-w-[500px] p-6 rounded-2xl shadow-lg text-white ${bgColor} relative mt-10 mb-10`}>
+
         <IoClose size={24} className="absolute top-4 right-4 cursor-pointer" onClick={onClose} />
 
         <h1 className="text-2xl text-center font-bold mb-4">{isEdit ? 'Edit Task' : 'Task Info'}</h1>
