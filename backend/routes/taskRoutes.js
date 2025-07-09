@@ -1,5 +1,5 @@
 import express from 'express'
-import {add, list, update, remove, updateLastUpdated} from '../controllers/taskControllers.js'
+import {add, list, update, remove, updateLastUpdated, smartAssign} from '../controllers/taskControllers.js'
 
 const router = express.Router();
 
@@ -8,6 +8,7 @@ router.post('/list', list);
 router.post('/update', update);
 router.post('/remove', remove);
 router.post('/updateLastUpdated', updateLastUpdated);
+router.post('/smart-assign', smartAssign);
 
 export default router
 

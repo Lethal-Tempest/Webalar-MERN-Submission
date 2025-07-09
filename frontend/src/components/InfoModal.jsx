@@ -7,7 +7,7 @@ import { useShopContext } from '../context/ShopContext';
 import ConflictModal from './ConflictModal';
 
 const InfoModal = ({ setup, task, onClose }) => {
-  const { backendUrl } = useShopContext();
+  const { backendUrl, users } = useShopContext();
   const [formData, setFormData] = useState({ ...task });
   const isEdit = setup === 'edit';
   const [lastSeen, setLastSeen] = useState(new Date(Date.now()));
@@ -91,6 +91,30 @@ const InfoModal = ({ setup, task, onClose }) => {
               <p className="bg-neutral-700 rounded p-2 mt-1 capitalize">{task.priority}</p>
             )}
           </label>
+          <label>
+            Assigned User:
+            {isEdit ? (
+              <select
+                value={formData.assUser}
+                className="w-full p-2 mt-1 bg-neutral-800 rounded"
+                onChange={(e) => setFormData({ ...formData, assUser: e.target.value })}
+              >
+                <option value="Unassigned">Unassigned</option>
+                {users.map(user => (
+                  <option key={user.id} value={user.id}>
+                    {user.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <p className="bg-neutral-700 rounded p-2 mt-1">
+                {formData.assUser === 'Unassigned'
+                  ? 'Unassigned'
+                  : users.find(u => u.name === formData.assUser)?.name || 'Unknown'}
+              </p>
+            )}
+          </label>
+
         </div>
 
         {isEdit && (

@@ -237,3 +237,58 @@ export const updateLastUpdated = async (req, res) => {
     }
 };
 
+export const smartAssign = async (req, res) => {
+  try {
+    const { taskId } = req.body;
+    const token = req.headers.token;
+    const user = await getUserFromToken(token);
+    if (!user) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const task = await Task.findById(taskId);
+    if (!task || task.assUser !== 'Unassigned') {
+      return res.status(400).json({ success: false, message: "Task is already assigned or doesn't exist." });
+    }
+
+    // Count active tasks per user (status 'todo' or 'ip')
+    const userTaskCounts = await Task.aggregate([
+      { $match: { assUser: { $ne: 'Unassigned' }, status: { $in: ['todo', 'ip'] } } },
+      { $group: { _id: "$assUser", count: { $sum: 1 } } }
+    ]);
+
+    const allUsers = await User.find({});
+    const countsMap = {};
+    userTaskCounts.forEach(u => { countsMap[u._id.toString()] = u.count });
+
+    // Pick user with min count
+    const sortedUsers = allUsers
+      .map(u => ({ user: u, count: countsMap[u._id.toString()] || 0 }))
+      .sort((a, b) => a.count - b.count);
+
+    const bestUser = sortedUsers[0]?.user;
+
+    if (!bestUser) {
+      return res.status(400).json({ success: false, message: "No users available to assign." });
+    }
+
+    task.assUser = bestUser.name;
+    task.lastUpdated = new Date();
+    await task.save();
+
+    const io = req.app.get('io');
+    io.emit('taskUpdated', task);
+
+    await Log.create({
+      message: `${user.name} smart-assigned task "${task.name}" to ${bestUser.name}`,
+      user: user._id,
+      timestamp: new Date()
+    });
+
+    res.status(200).json({ success: true, message: `Assigned to ${bestUser.name}`, task });
+
+  } catch (err) {
+    console.error("Smart assign failed:", err);
+    res.status(500).json({ success: false, message: "Server error", error: err.message });
+  }
+};

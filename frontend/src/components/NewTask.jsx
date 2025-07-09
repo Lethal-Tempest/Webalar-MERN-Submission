@@ -8,7 +8,7 @@ const NewTask = () => {
     const [formData, setFormData]=useState({
         name: '',
         desc: '',
-        assUser: 'Assign user',
+        assUser: 'Unassigned',
         status: 'todo',
         priority: 'low'
     })
@@ -43,7 +43,7 @@ const NewTask = () => {
                     <div className='flex gap-5 items-center justify-between'>
                         <span className='text-neutral-300 text-md'>Assigned User</span>
                         <select className="bg-neutral-700 rounded-lg p-2 mt-2 w-1/2" onChange={(e) => setFormData({...formData, assUser: e.target.value})} value={formData.assUser}>
-                            <option disabled>Assign user</option>       
+                            <option value="Unassigned">Unassigned</option>       
                             {
                                 users.map((user) => (
                                     <option key={user.email} value={user.id}>{user.name}</option>

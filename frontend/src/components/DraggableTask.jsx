@@ -47,7 +47,10 @@ const DraggableTask = ({ task, setSetup, setSelectedTask }) => {
         >
             {/* Left part: draggable area */}
             <div {...attributes} {...listeners} className="flex-1 hover:cursor-grab active:cursor-grabbing">
-                {task.name}
+                <div className='flex flex-col'>
+                    {task.name}
+                    <span className='text-sm text-neutral-400'>Assigned to {task.assUser}</span>
+                </div>
             </div>
 
             {/* Right part: edit button (non-draggable) */}
@@ -81,6 +84,25 @@ const DraggableTask = ({ task, setSetup, setSelectedTask }) => {
                     className="hover:cursor-pointer"
                     onClick={handleDelete}
                 />
+                {task.assUser === 'Unassigned' && (
+                    <button
+                        onClick={async (e) => {
+                            e.stopPropagation();
+                            try {
+                                const res = await axios.post(`${backendUrl}/api/task/smart-assign`, { taskId: task._id }, {
+                                    headers: { token: localStorage.getItem('token') }
+                                });
+                                console.log("✅ Smart Assigned:", res.data.message);
+                            } catch (err) {
+                                console.error("Smart assign failed:", err);
+                            }
+                        }}
+                        className="bg-blue-600 text-white text-xs px-2 py-1 rounded hover:cursor-pointer"
+                    >
+                        Smart Assign
+                    </button>
+                )}
+
 
             </div>
         </div>
