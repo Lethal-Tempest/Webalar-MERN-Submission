@@ -18,7 +18,7 @@ const App = () => {
   }, [token, navigate]);
 
   return (
-    <div className='flex-1 bg-neutral-800'>
+    <div className='flex-1 bg-neutral-800 overflow-x-hidden'>
       <Navbar onLogout={() => {
         localStorage.removeItem('token');
         setToken('');
