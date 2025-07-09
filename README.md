@@ -141,7 +141,7 @@ Conflicts occur when two users try to edit the same task simultaneously.
 
 ## 🌍 Deployment
 
-🔗 **Live App**: https://your-deployed-link.vercel.app  
+🔗 **Live App**: https://webalar-mern-submission.vercel.app/  
 🎥 **Demo Video**: https://loom.com/share/demo-link
 
 ---
