@@ -6,7 +6,7 @@ import { jwtDecode } from 'jwt-decode'; // 👈 add this line
 const ShopContext = createContext();
 export const useShopContext = () => useContext(ShopContext);
 
-const socket = io('http://localhost:5000');
+const socket = io('https://webalar-mern-submission.onrender.com');
 
 export const Columns = [
   { id: "todo", title: "To Do" },
@@ -15,7 +15,7 @@ export const Columns = [
 ];
 
 export const ShopProvider = ({ children }) => {
-  const backendUrl = 'http://localhost:5000';
+  const backendUrl = 'https://webalar-mern-submission.onrender.com';
   const [users, setUsers] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [logs, setLogs] = useState([]);
